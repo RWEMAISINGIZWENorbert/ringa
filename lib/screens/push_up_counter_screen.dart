@@ -28,7 +28,7 @@ class _PushupCounterScreenState extends State<PushupCounterScreen> {
   }
 
   Future<void> _init() async {
-    await _cameraService.initialize(useFrontCamera: false);
+    await _cameraService.initialize(useFrontCamera: true);
     setState(() {}); // rebuild once controller is ready
 
     _cameraService.startImageStream((CameraImage image) async {
@@ -61,26 +61,29 @@ class _PushupCounterScreenState extends State<PushupCounterScreen> {
     }
 
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final widgetSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              CameraPreview(controller),
-              if (_currentPose != null && _imageSize != null)
-                CustomPaint(
-                  painter: PoseOverlayPainter(
-                    pose: _currentPose!,
-                    imageSize: _imageSize!,
-                    widgetSize: widgetSize,
-                  ),
+    backgroundColor: Colors.black,
+    body: Center(
+      child: AspectRatio(
+        // camera plugin reports aspectRatio as landscape (width/height);
+        // invert it since we're displaying in portrait
+        aspectRatio: 1 / controller.value.aspectRatio,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CameraPreview(controller), // no manual Transform/mirror here anymore
+            if (_currentPose != null && _imageSize != null)
+              CustomPaint(
+                painter: PoseOverlayPainter(
+                  pose: _currentPose!,
+                  imageSize: _imageSize!, // raw Size(image.width, image.height), unswapped
+                  rotation: InputImageRotation.rotation270deg, // from your confirmed log
+                  cameraLensDirection: CameraLensDirection.front,
                 ),
-            ],
-          );
-        },
+              ),
+          ],
+        ),
       ),
-    );
+    ),
+  );
   }
 }

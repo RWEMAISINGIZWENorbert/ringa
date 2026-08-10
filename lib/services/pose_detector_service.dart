@@ -37,9 +37,28 @@ class PoseDetectorService {
   }
 
   InputImage? _convertCameraImage(CameraImage image, CameraDescription camera) {
-    final rotation =
-        InputImageRotationValue.fromRawValue(camera.sensorOrientation) ??
-            InputImageRotation.rotation0deg;
+      final sensorOrientation = camera.sensorOrientation;
+
+  InputImageRotation? rotation;
+  if (Platform.isIOS) {
+    rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+  } else if (Platform.isAndroid) {
+    // // Front camera: ML Kit expects rotation compensated for mirroring
+    // var rotationCompensation = sensorOrientation;
+    // if (camera.lensDirection == CameraLensDirection.front) {
+    //   rotationCompensation = (360 - sensorOrientation) % 360;
+    // }
+    // rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
+
+     // App is portrait-locked, so no live device-rotation compensation needed —
+    // sensorOrientation alone gives the correct rotation for both lens directions.
+    rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+
+  }
+  rotation ??= InputImageRotation.rotation0deg;
+  
+  print('====================================sensorOrientation: ${camera.sensorOrientation}, lensDirection: ${camera.lensDirection}, resolvedRotation: $rotation');
+
 
     final format = Platform.isAndroid
         ? InputImageFormat.nv21
