@@ -27,6 +27,7 @@ class _PushupCounterScreenState extends State<PushupCounterScreen> {
     _init();
   }
 
+
   Future<void> _init() async {
     await _cameraService.initialize(useFrontCamera: true);
     setState(() {}); // rebuild once controller is ready
@@ -38,6 +39,9 @@ class _PushupCounterScreenState extends State<PushupCounterScreen> {
       _imageSize = Size(image.width.toDouble(), image.height.toDouble());
 
       final pose = await _poseDetectorService.processImage(image, camera);
+      //  pose?.landmarks.forEach((landmarkType, landmark) {
+      //   print('Landmark: ${landmark.type}, x: ${landmark.x}, y: ${landmark.y}, z: ${landmark.z}');
+      // });
       if (pose != null && mounted) {
         setState(() => _currentPose = pose);
       }
@@ -80,6 +84,22 @@ class _PushupCounterScreenState extends State<PushupCounterScreen> {
                   cameraLensDirection: CameraLensDirection.front,
                 ),
               ),
+                Column(
+          children: [
+            Text(
+              'Push-ups detected: 0',
+              style: const TextStyle(fontSize: 24, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                _poseDetectorService.dispose();
+                _cameraService.stopImageStream();
+              },
+              child: const Text('STOP stream'),
+            ),
+          ],
+        ),     
           ],
         ),
       ),
