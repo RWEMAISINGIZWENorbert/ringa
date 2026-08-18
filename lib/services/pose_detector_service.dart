@@ -36,6 +36,10 @@ class PoseDetectorService {
     }
   }
 
+  Future<List<Pose>> processStaticImage(InputImage inputImage) async {
+  return await _poseDetector.processImage(inputImage);
+}
+
   InputImage? _convertCameraImage(CameraImage image, CameraDescription camera) {
     final sensorOrientation = camera.sensorOrientation;
 
