@@ -1,11 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ringa/blocs/push_up/push_up_event.dart';
 import 'package:ringa/blocs/push_up/push_up_state.dart';
-import '../../logic/angle_calculator.dart';
+import 'package:ringa/logic/angle_calculator.dart';
 
 class PushupBloc extends Bloc<PushupEvent, PushupState> {
-  // Hysteresis thresholds — different triggers for down vs up to prevent
-  // jitter around a single threshold from causing false/double counts.
   static const double downThreshold = 90.0;
   static const double upThreshold = 160.0;
 
@@ -16,11 +14,10 @@ class PushupBloc extends Bloc<PushupEvent, PushupState> {
 
   void _onPoseDetected(PoseDetected event, Emitter<PushupState> emit) {
     final angle = AngleCalculator.averageElbowAngle(event.pose);
+    final nextFrameId = state.frameId + 1;
 
-    // No confident angle this frame — still update lastPose so the
-    // overlay keeps tracking, but don't touch count/position logic.
     if (angle == null) {
-      emit(state.copyWith(lastPose: event.pose));
+      emit(state.copyWith(lastPose: event.pose, frameId: nextFrameId));
       return;
     }
 
@@ -31,7 +28,7 @@ class PushupBloc extends Bloc<PushupEvent, PushupState> {
       newPosition = RepPosition.down;
     } else if (angle > upThreshold && state.position == RepPosition.down) {
       newPosition = RepPosition.up;
-      newCount = state.count + 1; // rep completed: down -> up transition
+      newCount = state.count + 1;
     }
 
     emit(state.copyWith(
@@ -39,6 +36,7 @@ class PushupBloc extends Bloc<PushupEvent, PushupState> {
       position: newPosition,
       currentElbowAngle: angle,
       lastPose: event.pose,
+      frameId: nextFrameId,
     ));
   }
 

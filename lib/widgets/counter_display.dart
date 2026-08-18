@@ -41,6 +41,10 @@ class CounterDisplay extends StatelessWidget {
                   letterSpacing: 1.2,
                 ),
               ),
+              Text(
+                state.currentElbowAngle?.toStringAsFixed(1) ?? '--',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+             ),
             ],
           ),
         );
